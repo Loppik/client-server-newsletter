@@ -9,3 +9,5 @@ B:\КСИС\coursework\WpfApp1\ConsoleApp1\obj\Debug\ConsoleApp1.csproj.CoreComp
 B:\КСИС\coursework\WpfApp1\ConsoleApp1\obj\Debug\ConsoleApp1.csproj.CopyComplete
 B:\КСИС\coursework\WpfApp1\ConsoleApp1\obj\Debug\ConsoleApp1.exe
 B:\КСИС\coursework\WpfApp1\ConsoleApp1\obj\Debug\ConsoleApp1.pdb
+B:\КСИС\coursework\WpfApp1\ConsoleApp1\bin\Debug\NewslettersClassLibrary.dll
+B:\КСИС\coursework\WpfApp1\ConsoleApp1\bin\Debug\NewslettersClassLibrary.pdb

@@ -1,17 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using NewslettersClassLibrary;
 
 namespace WpfApp1
 {
@@ -20,13 +11,12 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        public MainWindow(string[] data)
         {
-
             InitializeComponent();
-            string[] userData = { "1", "loppik", "2018-01-01 13:13:13", "<?xml version=\"1.0\" encoding=\"utf-16\"?><ArrayOfInt xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><int>1</int><int>2</int></ArrayOfInt>" };
-            User user = new User(Int32.Parse(userData[0]), userData[0], userData[0], (List<int>)MySqlDBConnector.DeserializeObject(userData[0]));
-            List<News> news = StorageModel.dao.GetNewsBetweenTimeInterval(user.id, user.lastVisitTime, DateTime.Now.ToString());
+            User user = new User(Int32.Parse(data[0]), data[1], DateFormat.Parse(data[2]), (List<int>)Converter.DeserializeObject(data[3]));
+
+            List<News> news = null; //= StorageModel.dao.GetNewsBetweenTimeInterval(user.id, user.lastVisitTime, DateTime.Now.ToString());
 
             Canvas newCanvas;
             TextBlock textBlockName;
@@ -46,9 +36,9 @@ namespace WpfApp1
             }
 
             StackNews.UpdateLayout();
-           
+
             //  alex = new User(2, "Alex", "2018-04-12 13:13:13", new List<int>() { 1, 2 });
-            List<Subscription> userSubscriptions = StorageModel.dao.GetUserSubscriptions(user.id); // todo сделать поиск по id подписки
+            List<Subscription> userSubscriptions = null;//= StorageModel.dao.GetUserSubscriptions(user.id); // todo сделать поиск по id подписки
             TextBlock textBlockUserSubscriptions;
             foreach (Subscription sub in userSubscriptions)
             {
@@ -59,7 +49,7 @@ namespace WpfApp1
 
             StackUserSubscriptions.UpdateLayout();
 
-            List<Subscription> allSubscriptions = StorageModel.dao.GetAllSubscriptions();
+            List<Subscription> allSubscriptions = null;//StorageModel.dao.GetAllSubscriptions();
             TextBlock textBlockAllSubscriptions;
             foreach (Subscription sub in allSubscriptions)
             {

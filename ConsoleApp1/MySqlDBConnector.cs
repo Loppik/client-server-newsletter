@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using NewslettersClassLibrary;
 
 namespace WpfApp1
 {
@@ -24,12 +25,12 @@ namespace WpfApp1
         {
             List<News> newsList = new List<News>(5);
             News news;
-            string sqlRequest = "SELECT name, text FROM newsletter.news WHERE subscriptionId = " + userId + " AND Date(datetime) > Date('" + afterDatetime + "') AND Date(datetime) < Date('" + untilDatetime + "');";
+            string sqlRequest = "SELECT * FROM newsletter.news WHERE subscriptionId = " + userId + " AND Date(datetime) > Date('" + afterDatetime + "') AND Date(datetime) < Date('" + untilDatetime + "');";
 
             MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
             while (reader.Read())
             {
-                news = new News(reader[0].ToString(), reader[1].ToString(), 1, "date!");
+                news = new News(reader[0].ToString(), reader[1].ToString(), Int32.Parse(reader[2].ToString()), DateFormat.Parse(reader[3].ToString()));
                 newsList.Add(news);
             }
             reader.Close();
@@ -62,7 +63,7 @@ namespace WpfApp1
             string sqlRequest = "SELECT subscriptionsId FROM newsletter.user WHERE id = " + userId;
             MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
             reader.Read(); // todo change only for one data
-            List<int> subscriptionsId = (List<int>)DeserializeObject(reader[0].ToString());
+            List<int> subscriptionsId = (List<int>)Converter.DeserializeObject(reader[0].ToString());
             reader.Close();
 
             foreach (int subscriptionId in subscriptionsId)
@@ -79,21 +80,20 @@ namespace WpfApp1
 
             return subscriptions;
         }
-
-        // todo User from consoleApp but need from WPF
-        public override ConsoleApp1.User findUser(string nickname, string password)
+        
+        public override User FindUser(string nickname, string password)
         {
-            ConsoleApp1.User user;
+            User user;
             string sqlRequest = "SELECT * FROM newsletter.user WHERE nickname = '" + nickname + "' AND password = '" + "1234" + "'"; // todo change
             Console.WriteLine(sqlRequest);
             MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
             if (reader.Read()) // todo change only for one data
             {
-                user = new ConsoleApp1.User((int)reader[0], reader[1].ToString(), reader[3].ToString(), (List<int>)DeserializeObject(reader[4].ToString()));
+                user = new User((int)reader[0], reader[1].ToString(), DateFormat.Parse(reader[3].ToString()), (List<int>)Converter.DeserializeObject(reader[4].ToString()));
             }
             else
             {
-                user = new ConsoleApp1.User("noname");
+                user = new User("noname");
             }
             reader.Close();
             return user;
@@ -104,31 +104,6 @@ namespace WpfApp1
             MySqlCommand command = new MySqlCommand(sqlRequest, connection);
             MySqlDataReader reader = command.ExecuteReader();
             return reader;
-        }
-
-        public static string SerializeListOfInt(List<int> toSerialize)
-        {
-            XmlSerializer xmlSerializer = new XmlSerializer(toSerialize.GetType());
-
-            using (StringWriter textWriter = new StringWriter())
-            {
-                xmlSerializer.Serialize(textWriter, toSerialize);
-                return textWriter.ToString();
-            }
-        }
-
-        public static object DeserializeObject(string forDeserialize)
-        {
-            List<int> i = new List<int>();
-            var serializer = new XmlSerializer(i.GetType());
-            object result;
-
-            using (TextReader reader = new StringReader(forDeserialize))
-            {
-                result = serializer.Deserialize(reader);
-            }
-
-            return result;
         }
     }
 }

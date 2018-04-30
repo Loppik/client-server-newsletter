@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NewslettersClassLibrary;
 
-namespace ConsoleApp1
+namespace WpfApp1
 {
     class Program
     {
@@ -40,6 +40,7 @@ namespace ConsoleApp1
                 }
                 catch (Exception e)
                 {
+                    Console.WriteLine(e.StackTrace);
                     Console.WriteLine("Error");
                 }
 
@@ -61,7 +62,7 @@ namespace ConsoleApp1
                         int index = message.Substring(6).IndexOf(" ");
                         string nickname = message.Substring(6, index);
                         string password = message.Substring(index + 1);
-                        User tempUser = WpfApp1.StorageModel.dao.findUser(nickname, password);
+                        User tempUser = StorageModel.dao.FindUser(nickname, password);
                         // todo
                         string response;
                         if (tempUser.nickname != "noname")
@@ -71,7 +72,7 @@ namespace ConsoleApp1
                             user.lastVisitTime = tempUser.lastVisitTime;
                             user.subscriptionsId = tempUser.subscriptionsId;
                             Console.WriteLine("User connected: " + user.nickname);
-                            response = user.id + " " + user.nickname + " " + user.lastVisitTime + " " + WpfApp1.MySqlDBConnector.SerializeListOfInt(user.subscriptionsId);
+                            response = user.id + "*" + user.nickname + "*" + user.lastVisitTime + "*" + Converter.SerializeListOfInt(user.subscriptionsId);
                         }
                         else
                         {

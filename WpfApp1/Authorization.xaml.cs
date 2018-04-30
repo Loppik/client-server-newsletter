@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using NewslettersClassLibrary;
 
 namespace WpfApp1
 {
@@ -28,6 +29,12 @@ namespace WpfApp1
         public Authorization()
         {
             InitializeComponent();
+            //string time1 = "2/21/2009 10:35 PM";
+            //DateTime time = DateFormat.Parse(time1);
+            //Console.WriteLine(time);
+
+            //String time = "3:13:13 PM";
+            //DateFormat.Parse(time.ToString());
         }
 
         public void UserConnection(object sender, RoutedEventArgs e)
@@ -51,9 +58,9 @@ namespace WpfApp1
                     if (response != "invalid data")
                     {
                         // парсю конченную строку, выделяя 4 параметра, которые разделены пробелами
-                        //string[] data = response.Split(' ');
+                        string[] data = response.Split('*');
                         App.Current.MainWindow.Hide();
-                        MainWindow mainWindow = new MainWindow();
+                        MainWindow mainWindow = new MainWindow(data);
                         mainWindow.Show();
                     }
                     else
@@ -64,6 +71,7 @@ namespace WpfApp1
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.StackTrace);
                 Console.WriteLine("Error in Authorization");
             }
         }
