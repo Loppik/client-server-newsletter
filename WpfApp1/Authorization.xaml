@@ -11,10 +11,10 @@
     <Grid>
         <Canvas Height="400">
             <TextBlock Text="Nickname"/>
-            <TextBox Name="tbNickname" Height="20" Width="100" Canvas.Top="30"/>
+            <TextBox Text="loppik" Name="tbNickname" Height="20" Width="100" Canvas.Top="30"/>
 
             <TextBlock Text="Password" Canvas.Top="70"/>
-            <TextBox Name="tbPassword" Height="20" Width="100" Canvas.Top="100"/>
+            <TextBox Text="1234" Name="tbPassword" Height="20" Width="100" Canvas.Top="100"/>
 
             <Button Width="200" Content="Connect" Click="UserConnection" Canvas.Right="20" Canvas.Top="50"/>
             <TextBlock Name="Result" Width="200" Canvas.Top="200"/>

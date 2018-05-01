@@ -30,7 +30,7 @@ namespace WpfApp1
             MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
             while (reader.Read())
             {
-                news = new News(reader[1].ToString(), reader[2].ToString(), Int32.Parse(reader[3].ToString()), DateFormat.Parse(reader[4].ToString()));
+                news = new News(Int32.Parse(reader[0].ToString()), reader[1].ToString(), reader[2].ToString(), Int32.Parse(reader[3].ToString()), DateFormat.Parse(reader[4].ToString()));
                 newsList.Add(news);
             }
             reader.Close();
@@ -42,11 +42,11 @@ namespace WpfApp1
             List<Subscription> subscriptions = new List<Subscription>();
             Subscription subscription;
 
-            string sqlRequest = "SELECT name FROM newsletter.subscription";
+            string sqlRequest = "SELECT * FROM newsletter.subscription";
             MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
             while (reader.Read())
             {
-                subscription = new Subscription(1, reader[0].ToString());
+                subscription = new Subscription(Int32.Parse(reader[0].ToString()), reader[1].ToString(), reader[2].ToString());
                 subscriptions.Add(subscription);
             }
             reader.Close();
@@ -54,30 +54,21 @@ namespace WpfApp1
         }
 
         // todo Finish
-        public override List<Subscription> GetUserSubscriptions(int userId)
+        public override List<Subscription> GetUserSubscriptions(List<int> subscriptionsId)
         {
             List<Subscription> subscriptions = new List<Subscription>();
             Subscription subscription;
-
-            // Get subscriptsId
-            string sqlRequest = "SELECT subscriptions_id FROM newsletter.user WHERE id = " + userId;
-            MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
-            reader.Read(); // todo change only for one data
-            List<int> subscriptionsId = null;
-            subscriptionsId = (List<int>)Converter.DeserializeObject(reader[0].ToString(), subscriptionsId.GetType());
-            reader.Close();
-
-            foreach (int subscriptionId in subscriptionsId)
+            string sqlRequest;
+            MySqlDataReader reader;
+            sqlRequest = "SELECT * FROM newsletter.subscription WHERE id IN (" + string.Join(", ", subscriptionsId.ToArray()) + ")";
+            Console.WriteLine(sqlRequest);
+            reader = GetReaderOfCommandExecute(sqlRequest);
+            while (reader.Read())
             {
-                sqlRequest = "SELECT name FROM newsletter.subscription WHERE id = " + subscriptionId;
-                reader = GetReaderOfCommandExecute(sqlRequest);
-                while (reader.Read())
-                {
-                    subscription = new Subscription(1, reader[0].ToString());
-                    subscriptions.Add(subscription);
-                }
-                reader.Close();
+                subscription = new Subscription(Int32.Parse(reader[0].ToString()), reader[1].ToString(), reader[2].ToString());
+                subscriptions.Add(subscription);
             }
+            reader.Close();
 
             return subscriptions;
         }

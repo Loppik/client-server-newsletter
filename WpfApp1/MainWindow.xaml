@@ -14,7 +14,10 @@
 
                     </StackPanel>
                 </TabItem>
-                <TabItem Header="Your subscriptions">
+                <TabItem>
+                    <TabItem.Header>
+                        <Label Content="Your subscriptions" MouseLeftButtonDown="UserSubscriptionsLoad" HorizontalAlignment="Stretch"/>
+                    </TabItem.Header>
                     <StackPanel x:Name="StackUserSubscriptions">
                         <Canvas Height="70">
                             <TextBlock Width="500">java</TextBlock>
@@ -23,10 +26,12 @@
                         </Canvas>
                     </StackPanel>
                 </TabItem>
-                <TabItem Header="All subscriptions">
-                    <StackPanel x:Name="StackAllSubscriptions">
+                <TabItem>
+                    <TabItem.Header>
+                        <Label Content="All subscriptions" MouseLeftButtonDown="AllSubscriptionsLoad" HorizontalAlignment="Stretch"/>
+                    </TabItem.Header>
 
-                    </StackPanel>
+                    <StackPanel x:Name="StackAllSubscriptions"></StackPanel>
                 </TabItem>
             </TabControl>
         </ScrollViewer>

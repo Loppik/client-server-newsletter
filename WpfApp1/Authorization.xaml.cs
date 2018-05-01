@@ -41,7 +41,7 @@ namespace WpfApp1
                 IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
                 socket.Connect(endPoint);
                 Console.WriteLine(tbNickname.Text + " " + tbPassword.Text);
-                string request = "/auth*" + tbNickname.Text + "*" + tbPassword.Text;
+                string request = Request.AuthorizationRequest + "*" + tbNickname.Text + "*" + tbPassword.Text;
                 List<string> responses = Request.Send(socket, request);
                 foreach (string response in responses)
                 {

@@ -65,46 +65,70 @@ namespace WpfApp1
                     string message = Encoding.Unicode.GetString(bytes, 0, len);
                     string[] request = message.Split('*');
                     string response;
-                    if (request[0] == "/auth")
+                    List<Subscription> subscriptions;
+                    switch (request[0])
                     {
-                        string nickname = request[1];
-                        string password = request[2];
-                        tempUser = StorageModel.dao.FindUser(nickname, password);
-                        if (tempUser.nickname != "noname")
-                        {
-                            user.id = tempUser.id;
-                            user.nickname = tempUser.nickname;
-                            user.lastVisitTime = tempUser.lastVisitTime;
-                            user.subscriptionsId = tempUser.subscriptionsId;
-                            Console.WriteLine("User connected: " + user.nickname);
-                            //response = user.id + "*" + user.nickname + "*" + user.lastVisitTime + "*" + Converter.SerializeListOfInt(user.subscriptionsId);
-                            response = Converter.SerializeUser(user);
-                            Console.WriteLine("Response: " + response);
-                        }
-                        else
-                        {
-                            Console.WriteLine("An attempt to connect a user(" + nickname + ") which is't in database");
-                            response = "";
-                        }
-                        // todo create as thread
-                        user.socket.Send(Encoding.Unicode.GetBytes(response));
-                        user.socket.Send(Encoding.Unicode.GetBytes("end"));
-                    }
-
-                    if (request[0] == "/news")
-                    {   
-                        Console.WriteLine("Request from " + user.nickname + " on the latest news");
-                        List <News> newsList = StorageModel.dao.GetNewsBetweenTimeInterval(user.subscriptionsId, user.lastVisitTime, DateTime.Now);
-                        foreach (News news in newsList)
-                        {
-                            response = Converter.SerializeNews(news);
-                            Console.WriteLine(response);
+                        case Request.AuthorizationRequest:
+                            string nickname = request[1];
+                            string password = request[2];
+                            tempUser = StorageModel.dao.FindUser(nickname, password);
+                            if (tempUser.nickname != "noname")
+                            {
+                                user.id = tempUser.id;
+                                user.nickname = tempUser.nickname;
+                                user.lastVisitTime = tempUser.lastVisitTime;
+                                user.subscriptionsId = tempUser.subscriptionsId;
+                                Console.WriteLine("User connected: " + user.nickname);
+                                //response = user.id + "*" + user.nickname + "*" + user.lastVisitTime + "*" + Converter.SerializeListOfInt(user.subscriptionsId);
+                                response = Converter.SerializeUser(user);
+                                Console.WriteLine("Response: " + response);
+                            }
+                            else
+                            {
+                                Console.WriteLine("An attempt to connect a user(" + nickname + ") which is't in database");
+                                response = "";
+                            }
+                            // todo create as thread
                             user.socket.Send(Encoding.Unicode.GetBytes(response));
-                        }
-                        user.socket.Send(Encoding.Unicode.GetBytes("end"));
+                            user.socket.Send(Encoding.Unicode.GetBytes("end"));
+                            break;
+
+                        case Request.LastNewsRequest:
+                            Console.WriteLine("Request from " + user.nickname + " on the latest news");
+                            List<News> newsList = StorageModel.dao.GetNewsBetweenTimeInterval(user.subscriptionsId, user.lastVisitTime, DateTime.Now);
+                            foreach (News news in newsList)
+                            {
+                                response = Converter.SerializeNews(news);
+                                Console.WriteLine(response);
+                                user.socket.Send(Encoding.Unicode.GetBytes(response));
+                            }
+                            user.socket.Send(Encoding.Unicode.GetBytes("end"));
+                            break;
+
+                        case Request.UserSubscriptionsRequest:
+                            subscriptions = StorageModel.dao.GetUserSubscriptions(user.subscriptionsId);
+                            SendListOfSubscriptions(user.socket, subscriptions);
+                            break;
+
+                        case Request.AllSubscriptionsRequest:
+                            subscriptions = StorageModel.dao.GetAllSubscriptions();
+                            SendListOfSubscriptions(user.socket, subscriptions);
+                            break;
                     }
                 }
             }
+        }
+
+        public static void SendListOfSubscriptions(Socket socket, List<Subscription> subscriptions)
+        {
+            string response;
+            foreach (Subscription subscription in subscriptions)
+            {
+                response = Converter.Serialize(subscription);
+                Console.WriteLine(response);
+                socket.Send(Encoding.Unicode.GetBytes(response));
+            }
+            socket.Send(Encoding.Unicode.GetBytes("end"));
         }
     }
 }
