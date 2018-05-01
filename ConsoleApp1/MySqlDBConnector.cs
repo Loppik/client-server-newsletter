@@ -21,16 +21,16 @@ namespace WpfApp1
             connection.Open();
         }
 
-        public override List<News> GetNewsBetweenTimeInterval(int userId, string afterDatetime, string untilDatetime)
+        public override List<News> GetNewsBetweenTimeInterval(List<int> subscriptionId, DateTime afterDatetime, DateTime untilDatetime)
         {
             List<News> newsList = new List<News>(5);
             News news;
-            string sqlRequest = "SELECT * FROM newsletter.news WHERE subscriptionId = " + userId + " AND Date(datetime) > Date('" + afterDatetime + "') AND Date(datetime) < Date('" + untilDatetime + "');";
-
+            string sqlRequest = "SELECT * FROM newsletter.news WHERE subscription_id IN (" + string.Join(", ", subscriptionId.ToArray()) + ") AND datetime > '" + afterDatetime.Date + "' AND datetime < '" + untilDatetime.Date + "';";
+            Console.WriteLine(sqlRequest);
             MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
             while (reader.Read())
             {
-                news = new News(reader[0].ToString(), reader[1].ToString(), Int32.Parse(reader[2].ToString()), DateFormat.Parse(reader[3].ToString()));
+                news = new News(reader[1].ToString(), reader[2].ToString(), Int32.Parse(reader[3].ToString()), DateFormat.Parse(reader[4].ToString()));
                 newsList.Add(news);
             }
             reader.Close();
@@ -60,10 +60,11 @@ namespace WpfApp1
             Subscription subscription;
 
             // Get subscriptsId
-            string sqlRequest = "SELECT subscriptionsId FROM newsletter.user WHERE id = " + userId;
+            string sqlRequest = "SELECT subscriptions_id FROM newsletter.user WHERE id = " + userId;
             MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
             reader.Read(); // todo change only for one data
-            List<int> subscriptionsId = (List<int>)Converter.DeserializeObject(reader[0].ToString());
+            List<int> subscriptionsId = null;
+            subscriptionsId = (List<int>)Converter.DeserializeObject(reader[0].ToString(), subscriptionsId.GetType());
             reader.Close();
 
             foreach (int subscriptionId in subscriptionsId)
@@ -84,12 +85,12 @@ namespace WpfApp1
         public override User FindUser(string nickname, string password)
         {
             User user;
-            string sqlRequest = "SELECT * FROM newsletter.user WHERE nickname = '" + nickname + "' AND password = '" + "1234" + "'"; // todo change
+            string sqlRequest = "SELECT * FROM newsletter.user WHERE nickname = '" + nickname + "' AND password = '" + password + "'"; // todo change
             Console.WriteLine(sqlRequest);
             MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
             if (reader.Read()) // todo change only for one data
             {
-                user = new User((int)reader[0], reader[1].ToString(), DateFormat.Parse(reader[3].ToString()), (List<int>)Converter.DeserializeObject(reader[4].ToString()));
+                user = new User((int)reader[0], reader[1].ToString(), DateFormat.Parse(reader[3].ToString()), (List<int>)Converter.DeserializeObject(reader[4].ToString(), Converter.ListIntType));
             }
             else
             {

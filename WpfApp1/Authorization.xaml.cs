@@ -23,19 +23,15 @@ namespace WpfApp1
     /// </summary>
     public partial class Authorization : Page
     {
-        static Socket socket;
+        public static Socket socket;
         int port = 2000;
+        public static User user;
 
         public Authorization()
         {
             InitializeComponent();
-            //string time1 = "2/21/2009 10:35 PM";
-            //DateTime time = DateFormat.Parse(time1);
-            //Console.WriteLine(time);
-
-            //String time = "3:13:13 PM";
-            //DateFormat.Parse(time.ToString());
         }
+        
 
         public void UserConnection(object sender, RoutedEventArgs e)
         {
@@ -45,22 +41,15 @@ namespace WpfApp1
                 IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
                 socket.Connect(endPoint);
                 Console.WriteLine(tbNickname.Text + " " + tbPassword.Text);
-                string request = "/auth " + tbNickname.Text + " " + tbPassword.Text;
-                byte[] bytes = new byte[1024];
-                bytes = Encoding.Unicode.GetBytes(request);
-                socket.Send(bytes);
-                bytes = new byte[1024];
-                int len = socket.Receive(bytes);
-                if (len > 0)
+                string request = "/auth*" + tbNickname.Text + "*" + tbPassword.Text;
+                List<string> responses = Request.Send(socket, request);
+                foreach (string response in responses)
                 {
-                    string response = Encoding.Unicode.GetString(bytes, 0, len);
-                    Result.Text = response;
-                    if (response != "invalid data")
+                    if (response != "Invalid request")
                     {
-                        // парсю конченную строку, выделяя 4 параметра, которые разделены пробелами
-                        string[] data = response.Split('*');
+                        user = (User)Converter.DeserializeObject(response, Converter.UserType);
                         App.Current.MainWindow.Hide();
-                        MainWindow mainWindow = new MainWindow(data);
+                        MainWindow mainWindow = new MainWindow();
                         mainWindow.Show();
                     }
                     else
@@ -75,6 +64,5 @@ namespace WpfApp1
                 Console.WriteLine("Error in Authorization");
             }
         }
-        
     }
 }
