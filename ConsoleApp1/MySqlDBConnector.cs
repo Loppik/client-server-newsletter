@@ -28,11 +28,10 @@ namespace WpfApp1
                 return newsList;
             News news;
             string sqlRequest = "SELECT * FROM newsletter.news WHERE subscription_id IN (" + string.Join(", ", subscriptionId.ToArray()) + ") AND datetime > '" + afterDatetime.Date + "' AND datetime < '" + untilDatetime.Date + "';";
-            Console.WriteLine(sqlRequest);
             MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
             while (reader.Read())
             {
-                news = new News(Int32.Parse(reader[0].ToString()), reader[1].ToString(), reader[2].ToString(), Int32.Parse(reader[3].ToString()), DateFormat.Parse(reader[4].ToString()));
+                news = new News(Int32.Parse(reader[0].ToString()), reader[1].ToString(), reader[2].ToString(), Int32.Parse(reader[3].ToString()), DateTime.Parse(reader[4].ToString()));
                 newsList.Add(news);
             }
             reader.Close();
@@ -65,7 +64,6 @@ namespace WpfApp1
             string sqlRequest;
             MySqlDataReader reader;
             sqlRequest = "SELECT * FROM newsletter.subscription WHERE id IN (" + string.Join(", ", subscriptionsId.ToArray()) + ")";
-            Console.WriteLine(sqlRequest);
             reader = GetReaderOfCommandExecute(sqlRequest);
             while (reader.Read())
             {
@@ -81,12 +79,11 @@ namespace WpfApp1
         {
             User user;
             string sqlRequest = "SELECT id, last_visit_time FROM newsletter.user WHERE nickname = '" + nickname + "' AND password = '" + password + "'"; // todo change
-            Console.WriteLine(sqlRequest);
             MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
             if (reader.Read())
             {
                 int userId = Int32.Parse(reader[0].ToString());
-                DateTime lastVisitTime = DateFormat.Parse(reader[1].ToString());
+                DateTime lastVisitTime = DateTime.Parse(reader[1].ToString());
                 reader.Close();
                 string subsRequest = "SELECT subscription_id FROM newsletter.users_subscriptions_id WHERE user_id = '" + userId + "'";
                 MySqlDataReader subsReader = GetReaderOfCommandExecute(subsRequest);
@@ -108,7 +105,6 @@ namespace WpfApp1
         public override void DeleteUserSubscription(int userId, int subscriptionId)
         {
             string sqlRequest = "DELETE FROM newsletter.users_subscriptions_id WHERE user_id = '" + userId + "' AND subscription_id = '" + subscriptionId + "'";
-            Console.WriteLine(sqlRequest);
             MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
             reader.Close();
         }
@@ -116,8 +112,15 @@ namespace WpfApp1
         public override void AddUserSubscription(int userId, int subscriptionId)
         {
             string sqlRequest = "INSERT INTO newsletter.users_subscriptions_id (user_id, subscription_id) VALUES ('" + userId + "', '" + subscriptionId + "')";
-            Console.WriteLine(sqlRequest);
             MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
+            reader.Close();
+        }
+
+        public override void UpdateLastVisitTime(int userId, DateTime time)
+        {
+            string dateAndTime = time.ToString("yyyy/MM/dd hh:mm:ss");
+            string request = "UPDATE newsletter.user SET last_visit_time = '" + dateAndTime + "' WHERE id = '" + userId + "'";
+            MySqlDataReader reader = GetReaderOfCommandExecute(request);
             reader.Close();
         }
 

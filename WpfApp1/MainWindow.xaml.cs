@@ -191,6 +191,7 @@ namespace WpfApp1
 
         private void OnWindowClose(object sender, CancelEventArgs e)
         {
+            Request.Send(user.socket, Request.CloseConnection);
             Authorization.CloseWindow();
         }
         

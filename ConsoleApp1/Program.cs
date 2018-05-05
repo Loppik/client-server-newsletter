@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -77,7 +78,6 @@ namespace WpfApp1
                                 Console.WriteLine("User connected: " + user.nickname);
                                 //response = user.id + "*" + user.nickname + "*" + user.lastVisitTime + "*" + Converter.SerializeListOfInt(user.subscriptionsId);
                                 response = Converter.SerializeUser(user);
-                                Console.WriteLine("Response: " + response);
                             }
                             else
                             {
@@ -90,29 +90,34 @@ namespace WpfApp1
                             break;
 
                         case Request.LastNewsRequest:
-                            Console.WriteLine("Request from " + user.nickname + " on the latest news");
+                            Console.WriteLine("Request from " + user.nickname + " for the latest news");
                             List<News> newsList = StorageModel.dao.GetNewsBetweenTimeInterval(user.subscriptionsId, user.lastVisitTime, DateTime.Now);
                             foreach (News news in newsList)
                             {
                                 response = Converter.SerializeNews(news);
-                                Console.WriteLine(response);
                                 user.socket.Send(Encoding.Unicode.GetBytes(response));
                             }
+                            Console.WriteLine(user.nickname + " received " + newsList.Count + " news");
                             user.socket.Send(Encoding.Unicode.GetBytes("end"));
                             break;
 
                         case Request.UserSubscriptionsRequest:
+                            Console.WriteLine("Request from " + user.nickname + " for the your subscriptions");
                             subscriptions = StorageModel.dao.GetUserSubscriptions(user.subscriptionsId);
+                            Console.WriteLine(user.nickname + " received " + subscriptions.Count + " subscriptions");
                             SendListOfSubscriptions(user.socket, subscriptions);
                             break;
 
                         case Request.AllSubscriptionsRequest:
+                            Console.WriteLine("Request from " + user.nickname + " for the all subscriptions");
                             subscriptions = StorageModel.dao.GetAllSubscriptions();
+                            Console.WriteLine(user.nickname + " received " + subscriptions.Count + " subscriptions");
                             SendListOfSubscriptions(user.socket, subscriptions);
                             break;
 
                         case Request.DeleteUserSubcription:
                             int delSubId = Int32.Parse(request[1].ToString());
+                            Console.WriteLine("Request from " + user.nickname + " for delete subscription with id = " + delSubId);
                             StorageModel.dao.DeleteUserSubscription(user.id, delSubId);
                             user.subscriptionsId.Remove(delSubId);
                             user.socket.Send(Encoding.Unicode.GetBytes("end"));
@@ -120,10 +125,18 @@ namespace WpfApp1
 
                         case Request.AddUserSubcription:
                             int addSubId = Int32.Parse(request[1].ToString());
+                            Console.WriteLine("Request from " + user.nickname + " for add subscription with id = " + addSubId);
                             StorageModel.dao.AddUserSubscription(user.id, addSubId);
                             user.subscriptionsId.Add(addSubId);
                             user.socket.Send(Encoding.Unicode.GetBytes("end"));
                             break;
+
+                        case Request.CloseConnection:
+                            StorageModel.dao.UpdateLastVisitTime(user.id, DateTime.Now);
+                            user.socket.Send(Encoding.Unicode.GetBytes("end"));
+                            Console.WriteLine(user.nickname + " interrupted the connection");
+                            user.socket.Close();
+                            return;
                     }
                 }
             }

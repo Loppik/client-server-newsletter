@@ -15,5 +15,6 @@ namespace WpfApp1
         public abstract User FindUser(string nickname, string password);
         public abstract void DeleteUserSubscription(int userId, int subscriptionId);
         public abstract void AddUserSubscription(int userId, int subscriptionId);
+        public abstract void UpdateLastVisitTime(int userId, DateTime time);
     }
 }
