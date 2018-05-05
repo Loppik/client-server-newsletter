@@ -91,6 +91,13 @@ namespace WpfApp1
             return user;
         }
 
+        public override void ExchangeUserSubscriptionsId(int userId, List<int> subscriptionsId)
+        {
+            string sqlRequest = "UPDATE newsletter.user SET  WHERE nickname = '" + nickname + "' AND password = '" + password + "'"; // todo change
+            Console.WriteLine(sqlRequest);
+            MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
+        }
+
         public MySqlDataReader GetReaderOfCommandExecute(string sqlRequest)
         {
             MySqlCommand command = new MySqlCommand(sqlRequest, connection);

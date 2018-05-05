@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -18,6 +19,7 @@ namespace WpfApp1
 
         public MainWindow()
         {
+            this.Closing += OnWindowClose;
             InitializeComponent();
             
             user = Authorization.user;
@@ -28,6 +30,7 @@ namespace WpfApp1
             //user.socket.Connect(endPoint);// todo 
             List<News> news = GetLastNews();
             DisplayNews(StackNews, news);
+           
             //List<News> news = StorageModel.dao.GetNewsBetweenTimeInterval(user.id, user.lastVisitTime, DateTime.Now.ToString());
             
             
@@ -97,6 +100,11 @@ namespace WpfApp1
 
         }
 
+        public void AddUserSubscription(object sender, RoutedEventArgs e)
+        {
+
+        }
+
         public List<Subscription> GetSubscriptions(string request)
         {
             List<Subscription> subsList = new List<Subscription>();
@@ -126,9 +134,18 @@ namespace WpfApp1
                 textBlockDescription.Padding = new Thickness(0, 20, 0, 0);
                 button = new Button();
                 button.Width = 20;
-                button.Content = "X";
                 button.Margin = new Thickness(500, 0, 0, 0);
-                button.Click += DeleteUserSubscription;
+                if (user.subscriptionsId.IndexOf(sub.id) == -1) // no current subscription from user
+                {
+                    button.Content = "+";
+                    button.Click += AddUserSubscription;
+                }
+                else
+                {
+                    button.Content = "X";
+                    button.Click += DeleteUserSubscription;
+                }
+                
                 newCanvas.Children.Add(textBlockName);
                 newCanvas.Children.Add(button);
                 newCanvas.Children.Add(textBlockDescription);
@@ -155,5 +172,11 @@ namespace WpfApp1
             }
             
         }
+
+        private void OnWindowClose(object sender, CancelEventArgs e)
+        {
+            Authorization.CloseWindow();
+        }
+        
     }
 }

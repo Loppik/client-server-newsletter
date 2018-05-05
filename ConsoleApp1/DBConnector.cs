@@ -13,5 +13,6 @@ namespace WpfApp1
         public abstract List<Subscription> GetAllSubscriptions();
         public abstract List<Subscription> GetUserSubscriptions(List<int> subscriptionsId);
         public abstract User FindUser(string nickname, string password);
+        public abstract void ExchangeUserSubscriptionsId(int userId, List<int> subscriptionsId);
     }
 }

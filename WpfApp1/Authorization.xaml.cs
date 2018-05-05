@@ -26,6 +26,7 @@ namespace WpfApp1
         public static Socket socket;
         int port = 2000;
         public static User user;
+        private static Window window;
 
         public Authorization()
         {
@@ -48,7 +49,8 @@ namespace WpfApp1
                     if (response != "Invalid request")
                     {
                         user = (User)Converter.DeserializeObject(response, Converter.UserType);
-                        App.Current.MainWindow.Hide();
+                        window = App.Current.MainWindow;
+                        window.Hide();
                         MainWindow mainWindow = new MainWindow();
                         mainWindow.Show();
                     }
@@ -60,9 +62,15 @@ namespace WpfApp1
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 Console.WriteLine(ex.StackTrace);
-                Console.WriteLine("Error in Authorization");
             }
+        }
+
+        public static void CloseWindow()
+        {
+            socket.Close();
+            window.Close();
         }
     }
 }

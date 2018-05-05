@@ -16,10 +16,6 @@ namespace WpfApp1
 
         static void Main(string[] args)
         {
-            List<int> list = new List<int>();
-            list.Add(3);
-            list.Add(5);
-            Console.WriteLine();
             string address = "127.0.0.1";
             int port = 2000;
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);

@@ -18,13 +18,7 @@
                     <TabItem.Header>
                         <Label Content="Your subscriptions" MouseLeftButtonDown="UserSubscriptionsLoad" HorizontalAlignment="Stretch"/>
                     </TabItem.Header>
-                    <StackPanel x:Name="StackUserSubscriptions">
-                        <Canvas Height="70">
-                            <TextBlock Width="500">java</TextBlock>
-                            <Button Width="20" Content="X" Click="DeleteUserSubscription" Canvas.Right="20"/>
-                            <TextBlock Canvas.Top="20">Описание java</TextBlock>
-                        </Canvas>
-                    </StackPanel>
+                    <StackPanel x:Name="StackUserSubscriptions"></StackPanel>
                 </TabItem>
                 <TabItem>
                     <TabItem.Header>
