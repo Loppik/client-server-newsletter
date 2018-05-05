@@ -97,12 +97,29 @@ namespace WpfApp1
 
         public void DeleteUserSubscription(object sender, RoutedEventArgs e)
         {
-
+            int subId = AddOrDeleteUserSubscription(sender, Request.DeleteUserSubcription);
+            user.subscriptionsId.Remove(subId);
+            Button button = (Button)sender;
+            button.Content = "+";
+            Canvas canvas = (Canvas)button.Parent;
+            StackUserSubscriptions.Children.Remove(canvas);
         }
 
         public void AddUserSubscription(object sender, RoutedEventArgs e)
         {
+            int subId = AddOrDeleteUserSubscription(sender, Request.AddUserSubcription);
+            user.subscriptionsId.Add(subId);
+            Button button = (Button)sender;
+            button.Content = "X";
+        }
 
+        public int AddOrDeleteUserSubscription(object sender, string request)
+        {
+            DependencyObject dependencyObject = sender as DependencyObject;
+            string name = dependencyObject.GetValue(FrameworkElement.NameProperty) as string;
+            int subId = Int32.Parse(name[name.Length - 1].ToString());
+            List<string> responses = Request.Send(user.socket, request + "*" + subId);
+            return subId;
         }
 
         public List<Subscription> GetSubscriptions(string request)
@@ -131,10 +148,11 @@ namespace WpfApp1
                 textBlockName.Width = 500;
                 textBlockDescription = new TextBlock();
                 textBlockDescription.Text = sub.description;
-                textBlockDescription.Padding = new Thickness(0, 20, 0, 0);
+                textBlockDescription.Margin = new Thickness(0, 30, 0, 0);
                 button = new Button();
                 button.Width = 20;
                 button.Margin = new Thickness(500, 0, 0, 0);
+                button.Name = newCanvas.Name = "id" + sub.id.ToString();
                 if (user.subscriptionsId.IndexOf(sub.id) == -1) // no current subscription from user
                 {
                     button.Content = "+";
@@ -156,21 +174,19 @@ namespace WpfApp1
 
         public void UserSubscriptionsLoad(object sender, RoutedEventArgs e)
         {
-            if (StackUserSubscriptions.Children.Count == 0)
-            {
-                List<Subscription> userSubscriptions = GetSubscriptions(Request.UserSubscriptionsRequest);
-                DisplaySubscriptions(StackUserSubscriptions, userSubscriptions);
-            }   
+            SubscriptionsLoad(Request.UserSubscriptionsRequest, StackUserSubscriptions);
         }
 
         public void AllSubscriptionsLoad(object sender, RoutedEventArgs e)
         {
-            if (StackAllSubscriptions.Children.Count == 0)
-            {
-                List<Subscription> allSubscriptions = GetSubscriptions(Request.AllSubscriptionsRequest);
-                DisplaySubscriptions(StackAllSubscriptions, allSubscriptions);
-            }
-            
+            SubscriptionsLoad(Request.AllSubscriptionsRequest, StackAllSubscriptions);
+        }
+
+        public void SubscriptionsLoad(string request, StackPanel stackPanel)
+        {
+            stackPanel.Children.Clear();
+            List<Subscription> subscriptions = GetSubscriptions(request);
+            DisplaySubscriptions(stackPanel, subscriptions);
         }
 
         private void OnWindowClose(object sender, CancelEventArgs e)

@@ -110,6 +110,20 @@ namespace WpfApp1
                             subscriptions = StorageModel.dao.GetAllSubscriptions();
                             SendListOfSubscriptions(user.socket, subscriptions);
                             break;
+
+                        case Request.DeleteUserSubcription:
+                            int delSubId = Int32.Parse(request[1].ToString());
+                            StorageModel.dao.DeleteUserSubscription(user.id, delSubId);
+                            user.subscriptionsId.Remove(delSubId);
+                            user.socket.Send(Encoding.Unicode.GetBytes("end"));
+                            break;
+
+                        case Request.AddUserSubcription:
+                            int addSubId = Int32.Parse(request[1].ToString());
+                            StorageModel.dao.AddUserSubscription(user.id, addSubId);
+                            user.subscriptionsId.Add(addSubId);
+                            user.socket.Send(Encoding.Unicode.GetBytes("end"));
+                            break;
                     }
                 }
             }
