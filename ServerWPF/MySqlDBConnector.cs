@@ -97,7 +97,8 @@ namespace ServerWPF
             }
             else
             {
-                user = new User("noname");
+                reader.Close();
+                user = new User();
             }
             return user;
         }
@@ -126,7 +127,7 @@ namespace ServerWPF
 
         public override void AddNews(News news)
         {
-            string sqlRequest = "INSERT INTO newsletter.news (name, text, subscription_id, datetime) VALUES ('" + news.name + "', '" + news.text + "', '" + news.subscription + "', '" + DateTime.Now.ToString("yyyy/MM/dd hh:mm:ss") + "')";
+            string sqlRequest = "INSERT INTO newsletter.news (name, text, subscription_id, datetime) VALUES ('" + news.name + "', '" + news.text + "', '" + news.subscription + "', '" + news.datetime.ToString("yyyy/MM/dd hh:mm:ss") + "')";
             MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
             reader.Close();
         }
@@ -139,6 +140,21 @@ namespace ServerWPF
             Subscription subscription = new Subscription(Int32.Parse(reader[0].ToString()), reader[1].ToString(), reader[2].ToString());
             reader.Close();
             return subscription;
+        }
+
+        public override User AddUser(User user)
+        {
+            string sqlRequest = "INSERT INTO newsletter.user (nickname, password, last_visit_time) VALUES ('" + user.nickname + "', '" + user.password + "', '" + user.lastVisitTime.ToString("yyyy/MM/dd hh:mm:ss") + "')";
+            MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
+            reader.Close();
+            sqlRequest = "SELECT id FROM newsletter.user WHERE nickname = '" + user.nickname + "'";
+            reader = GetReaderOfCommandExecute(sqlRequest);
+            reader.Read();
+            int userId = Int32.Parse(reader[0].ToString());
+            reader.Close();
+            user.id = userId;
+            user.subscriptionsId = new List<int>();
+            return user;
         }
 
         public MySqlDataReader GetReaderOfCommandExecute(string sqlRequest)

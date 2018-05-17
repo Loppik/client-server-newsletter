@@ -20,9 +20,6 @@ using System.ComponentModel;
 
 namespace ServerWPF
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         static Socket socket;
@@ -82,32 +79,57 @@ namespace ServerWPF
                 {
                     string message = Encoding.Unicode.GetString(bytes, 0, len);
                     string[] request = message.Split('*');
-                    string response;
+                    string response, nickname, password;
                     List<Subscription> subscriptions;
                     switch (request[0])
                     {
                         case Request.AuthorizationRequest:
-                            string nickname = request[1];
-                            string password = request[2];
+                            nickname = request[1];
+                            password = request[2];
                             tempUser = StorageModel.dao.FindUser(nickname, password);
-                            if (tempUser.nickname != "noname")
+                            if (tempUser.nickname != null)
                             {
                                 user.id = tempUser.id;
                                 user.nickname = tempUser.nickname;
                                 user.lastVisitTime = tempUser.lastVisitTime;
                                 user.subscriptionsId = tempUser.subscriptionsId;
                                 Output("User connected: " + user.nickname);
-                                //response = user.id + "*" + user.nickname + "*" + user.lastVisitTime + "*" + Converter.SerializeListOfInt(user.subscriptionsId);
                                 response = Converter.SerializeUser(user);
                             }
                             else
                             {
-                                Output("An attempt to connect a user(" + nickname + ") which is't in database");
-                                response = "";
+                                Output("An attempt to connect a user(nickname: " + nickname + ", password: " + password + ") incorrect nickname or password");
+                                response = "Invalid data";
                             }
                             // todo create as thread
                             user.socket.Send(Encoding.Unicode.GetBytes(response));
                             user.socket.Send(Encoding.Unicode.GetBytes("end"));
+                            // if (response == "Invalid data") { return; }
+                            break;
+
+                        case Request.RegRequest:
+                            nickname = request[1];
+                            password = request[2];
+                            tempUser = StorageModel.dao.FindUser(nickname, password);
+                            if (tempUser.nickname == null)
+                            {
+                                tempUser = StorageModel.dao.AddUser(new User(nickname, password, DateTime.Now));
+                                user.id = tempUser.id;
+                                user.nickname = tempUser.nickname;
+                                user.lastVisitTime = tempUser.lastVisitTime;
+                                user.subscriptionsId = tempUser.subscriptionsId;
+                                Output("User registered: " + user.nickname);
+                                response = Converter.SerializeUser(user);
+                            }
+                            else
+                            {
+                                Output("An attempt to registration a user(nickname: " + nickname + ") this nickname already registered");
+                                response = "Invalid data";
+                            }
+                            // todo create as thread
+                            user.socket.Send(Encoding.Unicode.GetBytes(response));
+                            user.socket.Send(Encoding.Unicode.GetBytes("end"));
+                            // if (response == "Invalid data") { return; }
                             break;
 
                         case Request.LastNewsRequest:
@@ -204,7 +226,7 @@ namespace ServerWPF
             string text = GetTextOfTextBox(NewsTextTextBox);
             string subscriptionName = GetTextOfComboBox(SubscriptionsComboBox);
             Subscription subscription = StorageModel.dao.GetSubscription(subscriptionName);
-            News news = new News(-1, name, text, subscription.id, DateTime.Now);
+            News news = new News(name, text, subscription.id, DateTime.Now);
             StorageModel.dao.AddNews(news);
             SetTextOfTextBox(NewsNameTextBox, "");
             SetTextOfTextBox(NewsTextTextBox, "");

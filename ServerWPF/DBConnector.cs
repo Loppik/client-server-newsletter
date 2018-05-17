@@ -18,5 +18,6 @@ namespace ServerWPF
         public abstract void UpdateLastVisitTime(int userId, DateTime time);
         public abstract void AddNews(News news);
         public abstract Subscription GetSubscription(string subscriptionName);
+        public abstract User AddUser(User user);
     }
 }

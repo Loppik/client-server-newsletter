@@ -31,6 +31,10 @@ namespace WpfApp1
         public Authorization()
         {
             InitializeComponent();
+
+            socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
+            socket.Connect(endPoint);
         }
         
 
@@ -38,15 +42,11 @@ namespace WpfApp1
         {
             try
             {
-                socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
-                socket.Connect(endPoint);
-                Console.WriteLine(tbNickname.Text + " " + tbPassword.Text);
-                string request = Request.AuthorizationRequest + "*" + tbNickname.Text + "*" + tbPassword.Text;
+                string request = Request.AuthorizationRequest + "*" + tbNickname.Text + "*" + tbPassword.Password;
                 List<string> responses = Request.Send(socket, request);
                 foreach (string response in responses)
                 {
-                    if (response != "Invalid request")
+                    if (response != "Invalid data")
                     {
                         user = (User)Converter.DeserializeObject(response, Converter.UserType);
                         window = App.Current.MainWindow;
@@ -67,6 +67,34 @@ namespace WpfApp1
             }
         }
 
+        public void RegUser(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string request = Request.RegRequest + "*" + tbNickname.Text + "*" + tbPassword.Password;
+                List<string> responses = Request.Send(socket, request);
+                foreach (string response in responses)
+                {
+                    if (response != "Invalid data")
+                    {
+                        user = (User)Converter.DeserializeObject(response, Converter.UserType);
+                        window = App.Current.MainWindow;
+                        window.Hide();
+                        MainWindow mainWindow = new MainWindow();
+                        mainWindow.Show();
+                    }
+                    else
+                    {
+                        MessageBox.Show("User with this nickname already registered");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                Console.WriteLine(ex.StackTrace);
+            }
+        }
         public static void CloseWindow()
         {
             socket.Close();

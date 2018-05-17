@@ -4,19 +4,19 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:WpfApp1"
-      mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="Authorization">
+      mc:Ignorable="d"
+      Title="Authorization" Width="263.396" Height="185.094">
 
     <Grid>
-        <Canvas Height="400">
+        <Canvas Height="400" Margin="0,25,10,25">
             <TextBlock Text="Nickname"/>
             <TextBox Text="loppik" Name="tbNickname" Height="20" Width="100" Canvas.Top="30"/>
 
             <TextBlock Text="Password" Canvas.Top="70"/>
-            <TextBox Text="1234" Name="tbPassword" Height="20" Width="100" Canvas.Top="100"/>
+            <PasswordBox Name="tbPassword" Height="20" Width="100" Canvas.Top="100"/>
 
-            <Button Width="200" Content="Connect" Click="UserConnection" Canvas.Right="20" Canvas.Top="50"/>
+            <Button Width="100" Content="Connect" Click="UserConnection" Canvas.Right="20" Canvas.Top="50"/>
+            <Button Width="100" Content="Registration" Click="RegUser" Canvas.Right="20" Canvas.Top="90"/>
             <TextBlock Name="Result" Width="200" Canvas.Top="200"/>
         </Canvas>
     </Grid>
