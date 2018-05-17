@@ -1,23 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using NewslettersClassLibrary;
+using System.ComponentModel;
 
-namespace WpfApp1
+namespace ServerWPF
 {
-    class Program
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
     {
         static Socket socket;
+        Thread waitConnectionsThread;
+        static TextBoxOutput output;
         static News lastNews;
 
-        static void Main(string[] args)
+        public MainWindow()
         {
+            this.Closing += OnWindowClose;
+            InitializeComponent();
+            LoadComboBoxItems();
+
+            output = new TextBoxOutput(TextBoxLog);
+
             string address = "127.0.0.1";
             int port = 2000;
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -25,13 +45,13 @@ namespace WpfApp1
             socket.Bind(endPoint);
             socket.Listen(5);
 
-            Thread thread = new Thread(new ThreadStart(WaitForConnections));
-            thread.Start();
+            waitConnectionsThread = new Thread(new ThreadStart(WaitForConnections));
+            waitConnectionsThread.Start();
         }
 
-        public static void WaitForConnections()
+        public void WaitForConnections()
         {
-            Console.WriteLine("Waiting for connections");
+            Output("Waiting for connections");
             while (true)
             {
                 User user = new User("newUser");
@@ -43,15 +63,15 @@ namespace WpfApp1
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.StackTrace);
-                    Console.WriteLine("Error");
+                    Output(e.StackTrace);
+                    Output("Error");
                 }
 
             }
 
         }
 
-        public static void ProcessMessages(User user)
+        public void ProcessMessages(User user)
         {
             User tempUser = null;
             while (true)
@@ -76,13 +96,13 @@ namespace WpfApp1
                                 user.nickname = tempUser.nickname;
                                 user.lastVisitTime = tempUser.lastVisitTime;
                                 user.subscriptionsId = tempUser.subscriptionsId;
-                                Console.WriteLine("User connected: " + user.nickname);
+                                Output("User connected: " + user.nickname);
                                 //response = user.id + "*" + user.nickname + "*" + user.lastVisitTime + "*" + Converter.SerializeListOfInt(user.subscriptionsId);
                                 response = Converter.SerializeUser(user);
                             }
                             else
                             {
-                                Console.WriteLine("An attempt to connect a user(" + nickname + ") which is't in database");
+                                Output("An attempt to connect a user(" + nickname + ") which is't in database");
                                 response = "";
                             }
                             // todo create as thread
@@ -91,34 +111,34 @@ namespace WpfApp1
                             break;
 
                         case Request.LastNewsRequest:
-                            Console.WriteLine("Request from " + user.nickname + " for the latest news");
+                            Output("Request from " + user.nickname + " for the latest news");
                             List<News> newsList = StorageModel.dao.GetNewsBetweenTimeInterval(user.subscriptionsId, user.lastVisitTime, DateTime.Now);
                             foreach (News news in newsList)
                             {
                                 response = Converter.SerializeNews(news);
                                 user.socket.Send(Encoding.Unicode.GetBytes(response));
                             }
-                            Console.WriteLine(user.nickname + " received " + newsList.Count + " news");
+                            Output(user.nickname + " received " + newsList.Count + " news");
                             user.socket.Send(Encoding.Unicode.GetBytes("end"));
                             break;
 
                         case Request.UserSubscriptionsRequest:
-                            Console.WriteLine("Request from " + user.nickname + " for the your subscriptions");
+                            Output("Request from " + user.nickname + " for the your subscriptions");
                             subscriptions = StorageModel.dao.GetUserSubscriptions(user.subscriptionsId);
-                            Console.WriteLine(user.nickname + " received " + subscriptions.Count + " subscriptions");
+                            Output(user.nickname + " received " + subscriptions.Count + " subscriptions");
                             SendListOfSubscriptions(user.socket, subscriptions);
                             break;
 
                         case Request.AllSubscriptionsRequest:
-                            Console.WriteLine("Request from " + user.nickname + " for the all subscriptions");
+                            Output("Request from " + user.nickname + " for the all subscriptions");
                             subscriptions = StorageModel.dao.GetAllSubscriptions();
-                            Console.WriteLine(user.nickname + " received " + subscriptions.Count + " subscriptions");
+                            Output(user.nickname + " received " + subscriptions.Count + " subscriptions");
                             SendListOfSubscriptions(user.socket, subscriptions);
                             break;
 
                         case Request.DeleteUserSubcription:
                             int delSubId = Int32.Parse(request[1].ToString());
-                            Console.WriteLine("Request from " + user.nickname + " for delete subscription with id = " + delSubId);
+                            Output("Request from " + user.nickname + " for delete subscription with id = " + delSubId);
                             StorageModel.dao.DeleteUserSubscription(user.id, delSubId);
                             user.subscriptionsId.Remove(delSubId);
                             user.socket.Send(Encoding.Unicode.GetBytes("end"));
@@ -126,7 +146,7 @@ namespace WpfApp1
 
                         case Request.AddUserSubcription:
                             int addSubId = Int32.Parse(request[1].ToString());
-                            Console.WriteLine("Request from " + user.nickname + " for add subscription with id = " + addSubId);
+                            Output("Request from " + user.nickname + " for add subscription with id = " + addSubId);
                             StorageModel.dao.AddUserSubscription(user.id, addSubId);
                             user.subscriptionsId.Add(addSubId);
                             user.socket.Send(Encoding.Unicode.GetBytes("end"));
@@ -135,7 +155,7 @@ namespace WpfApp1
                         case Request.CloseConnection:
                             StorageModel.dao.UpdateLastVisitTime(user.id, DateTime.Now);
                             user.socket.Send(Encoding.Unicode.GetBytes("end"));
-                            Console.WriteLine(user.nickname + " interrupted the connection");
+                            Output(user.nickname + " interrupted the connection");
                             user.socket.Close();
                             return;
                     }
@@ -143,16 +163,72 @@ namespace WpfApp1
             }
         }
 
-        public static void SendListOfSubscriptions(Socket socket, List<Subscription> subscriptions)
+        public void SendListOfSubscriptions(Socket socket, List<Subscription> subscriptions)
         {
             string response;
             foreach (Subscription subscription in subscriptions)
             {
                 response = Converter.Serialize(subscription);
-                Console.WriteLine(response);
+                Output(response);
                 socket.Send(Encoding.Unicode.GetBytes(response));
             }
             socket.Send(Encoding.Unicode.GetBytes("end"));
+        }
+
+        public void Output(string text)
+        {
+            this.Dispatcher.Invoke(() => { output.Add(text); });
+        }
+
+        public void LoadComboBoxItems()
+        {
+            TextBlock textBlock;
+            List<Subscription> subscriptions = StorageModel.dao.GetAllSubscriptions();
+            foreach (Subscription sub in subscriptions)
+            {
+                textBlock = new TextBlock();
+                textBlock.Text = sub.name;
+                SubscriptionsComboBox.Items.Add(textBlock);
+            }
+        }
+
+        public void AddNewsEvent(object sender, RoutedEventArgs e)
+        {
+            Thread addNewsThread = new Thread(new ThreadStart(AddNews));
+            addNewsThread.Start();
+        }
+
+        public void AddNews()
+        {
+            string name = GetTextOfTextBox(NewsNameTextBox);
+            string text = GetTextOfTextBox(NewsTextTextBox);
+            string subscriptionName = GetTextOfComboBox(SubscriptionsComboBox);
+            Subscription subscription = StorageModel.dao.GetSubscription(subscriptionName);
+            News news = new News(-1, name, text, subscription.id, DateTime.Now);
+            StorageModel.dao.AddNews(news);
+            SetTextOfTextBox(NewsNameTextBox, "");
+            SetTextOfTextBox(NewsTextTextBox, "");
+            MessageBox.Show("News successfully added");
+        }
+
+        public string GetTextOfTextBox(TextBox textBox)
+        {
+            return this.Dispatcher.Invoke(() => { return textBox.Text; });
+        }
+
+        public void SetTextOfTextBox(TextBox textBox, string text)
+        {
+            this.Dispatcher.Invoke(() => { textBox.Text = text; });
+        }
+
+        public string GetTextOfComboBox(ComboBox comboBox)
+        {
+            return this.Dispatcher.Invoke(() => { return ((TextBlock)(comboBox.SelectedItem)).Text; });
+        }
+
+        public void OnWindowClose(object sender, CancelEventArgs e)
+        {
+            // waitConnectionsThread.Abort();
         }
     }
 }
