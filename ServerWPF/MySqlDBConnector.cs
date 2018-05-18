@@ -27,7 +27,7 @@ namespace ServerWPF
             if (subscriptionId.Count == 0)
                 return newsList;
             News news;
-            string sqlRequest = "SELECT * FROM newsletter.news WHERE subscription_id IN (" + string.Join(", ", subscriptionId.ToArray()) + ") AND datetime > '" + afterDatetime.Date + "' AND datetime < '" + untilDatetime.Date + "';";
+            string sqlRequest = "SELECT * FROM newsletter.news WHERE subscription_id IN (" + string.Join(", ", subscriptionId.ToArray()) + ") AND datetime > '" + afterDatetime.ToString("yyyy-MM-dd hh:mm:ss") + "' AND datetime < '" + untilDatetime.ToString("yyyy-MM-dd hh:mm:ss") + "';";
             MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
             while (reader.Read())
             {
@@ -119,7 +119,7 @@ namespace ServerWPF
 
         public override void UpdateLastVisitTime(int userId, DateTime time)
         {
-            string dateAndTime = time.ToString("yyyy/MM/dd hh:mm:ss");
+            string dateAndTime = time.ToString("yyyy-MM-dd hh:mm:ss");
             string request = "UPDATE newsletter.user SET last_visit_time = '" + dateAndTime + "' WHERE id = '" + userId + "'";
             MySqlDataReader reader = GetReaderOfCommandExecute(request);
             reader.Close();

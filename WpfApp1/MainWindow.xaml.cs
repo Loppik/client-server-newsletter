@@ -28,12 +28,11 @@ namespace WpfApp1
             //user.socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             //IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 2000);
             //user.socket.Connect(endPoint);// todo 
-            List<News> news = GetLastNews();
-            DisplayNews(StackNews, news);
-           
+            GetLastNewsAndDisplay();
+            UpdateLastVisitTime(DateTime.Now);
             //List<News> news = StorageModel.dao.GetNewsBetweenTimeInterval(user.id, user.lastVisitTime, DateTime.Now.ToString());
-            
-            
+
+
             /*
             //  alex = new User(2, "Alex", "2018-04-12 13:13:13", new List<int>() { 1, 2 });
             List<Subscription> userSubscriptions = null;//= StorageModel.dao.GetUserSubscriptions(user.id); // todo сделать поиск по id подписки
@@ -93,24 +92,36 @@ namespace WpfApp1
 
             stackPanel.UpdateLayout();
         }
+
+        public void GetLastNewsAndDisplay()
+        {
+            List<News> news = GetLastNews();
+            DisplayNews(StackNews, news);
+        }
         
 
         public void DeleteUserSubscription(object sender, RoutedEventArgs e)
         {
             int subId = AddOrDeleteUserSubscription(sender, Request.DeleteUserSubcription);
-            user.subscriptionsId.Remove(subId);
-            Button button = (Button)sender;
-            button.Content = "+";
-            Canvas canvas = (Canvas)button.Parent;
-            StackUserSubscriptions.Children.Remove(canvas);
+            if (subId != -1)
+            {
+                user.subscriptionsId.Remove(subId);
+                Button button = (Button)sender;
+                button.Content = "+";
+                Canvas canvas = (Canvas)button.Parent;
+                StackUserSubscriptions.Children.Remove(canvas);
+            }
         }
 
         public void AddUserSubscription(object sender, RoutedEventArgs e)
         {
             int subId = AddOrDeleteUserSubscription(sender, Request.AddUserSubcription);
-            user.subscriptionsId.Add(subId);
-            Button button = (Button)sender;
-            button.Content = "X";
+            if (subId != -1)
+            {
+                user.subscriptionsId.Add(subId);
+                Button button = (Button)sender;
+                button.Content = "X";
+            }
         }
 
         public int AddOrDeleteUserSubscription(object sender, string request)
@@ -119,6 +130,7 @@ namespace WpfApp1
             string name = dependencyObject.GetValue(FrameworkElement.NameProperty) as string;
             int subId = Int32.Parse(name[name.Length - 1].ToString());
             List<string> responses = Request.Send(user.socket, request + "*" + subId);
+            if (responses[0] != "add subscription" || responses[0] != "delete subscription") { MessageBox.Show("Error: error in add or delete subscription"); return -1; };
             return subId;
         }
 
@@ -189,10 +201,30 @@ namespace WpfApp1
             DisplaySubscriptions(stackPanel, subscriptions);
         }
 
+        public void UpdateNews(object sender, RoutedEventArgs e)
+        {
+            GetLastNewsAndDisplay();
+            UpdateLastVisitTime(DateTime.Now);
+        }
+
+        public void UpdateLastVisitTime(DateTime time)
+        {
+            user.lastVisitTime = time;
+            List<string> responses = Request.Send(user.socket, Request.UpdateLastVisitTime);
+            if (responses[0] != "time updated") { MessageBox.Show("Error: last visit time hasn't updated"); }
+        }
+
         private void OnWindowClose(object sender, CancelEventArgs e)
         {
-            Request.Send(user.socket, Request.CloseConnection);
-            Authorization.CloseWindow();
+            List<string> responses = Request.Send(user.socket, Request.CloseConnection);
+            if (responses[0] == "connection closed")
+            {
+                Authorization.CloseWindow();
+            }
+            else
+            {
+                MessageBox.Show("Error: application closing error");
+            }
         }
         
     }

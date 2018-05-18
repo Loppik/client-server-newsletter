@@ -163,6 +163,7 @@ namespace ServerWPF
                             Output("Request from " + user.nickname + " for delete subscription with id = " + delSubId);
                             StorageModel.dao.DeleteUserSubscription(user.id, delSubId);
                             user.subscriptionsId.Remove(delSubId);
+                            user.socket.Send(Encoding.Unicode.GetBytes("delete subscription"));
                             user.socket.Send(Encoding.Unicode.GetBytes("end"));
                             break;
 
@@ -171,11 +172,19 @@ namespace ServerWPF
                             Output("Request from " + user.nickname + " for add subscription with id = " + addSubId);
                             StorageModel.dao.AddUserSubscription(user.id, addSubId);
                             user.subscriptionsId.Add(addSubId);
+                            user.socket.Send(Encoding.Unicode.GetBytes("add subscription"));
+                            user.socket.Send(Encoding.Unicode.GetBytes("end"));
+                            break;
+
+                        case Request.UpdateLastVisitTime:
+                            StorageModel.dao.UpdateLastVisitTime(user.id, DateTime.Now);
+                            user.socket.Send(Encoding.Unicode.GetBytes("time updated"));
                             user.socket.Send(Encoding.Unicode.GetBytes("end"));
                             break;
 
                         case Request.CloseConnection:
                             StorageModel.dao.UpdateLastVisitTime(user.id, DateTime.Now);
+                            user.socket.Send(Encoding.Unicode.GetBytes("connection closed"));
                             user.socket.Send(Encoding.Unicode.GetBytes("end"));
                             Output(user.nickname + " interrupted the connection");
                             user.socket.Close();

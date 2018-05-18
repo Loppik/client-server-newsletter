@@ -7,27 +7,30 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <ScrollViewer>
-            <TabControl>
-                <TabItem Header="News" x:Name="TabNews">
-                    <StackPanel x:Name="StackNews">
+        <StackPanel>
+            <ScrollViewer Height="400">
+                <TabControl>
+                    <TabItem Header="News" x:Name="TabNews">
+                        <StackPanel x:Name="StackNews">
 
-                    </StackPanel>
-                </TabItem>
-                <TabItem>
-                    <TabItem.Header>
-                        <Label Content="Your subscriptions" MouseLeftButtonDown="UserSubscriptionsLoad" HorizontalAlignment="Stretch"/>
-                    </TabItem.Header>
-                    <StackPanel x:Name="StackUserSubscriptions"></StackPanel>
-                </TabItem>
-                <TabItem>
-                    <TabItem.Header>
-                        <Label Content="All subscriptions" MouseLeftButtonDown="AllSubscriptionsLoad" HorizontalAlignment="Stretch"/>
-                    </TabItem.Header>
+                        </StackPanel>
+                    </TabItem>
+                    <TabItem>
+                        <TabItem.Header>
+                            <Label Content="Your subscriptions" MouseLeftButtonDown="UserSubscriptionsLoad" HorizontalAlignment="Stretch"/>
+                        </TabItem.Header>
+                        <StackPanel x:Name="StackUserSubscriptions"></StackPanel>
+                    </TabItem>
+                    <TabItem>
+                        <TabItem.Header>
+                            <Label Content="All subscriptions" MouseLeftButtonDown="AllSubscriptionsLoad" HorizontalAlignment="Stretch"/>
+                        </TabItem.Header>
 
-                    <StackPanel x:Name="StackAllSubscriptions"></StackPanel>
-                </TabItem>
-            </TabControl>
-        </ScrollViewer>
+                        <StackPanel x:Name="StackAllSubscriptions"></StackPanel>
+                    </TabItem>
+                </TabControl>
+            </ScrollViewer>
+            <Button Width="792" Content="Update" Click="UpdateNews"/>
+        </StackPanel>
     </Grid>
 </Window>
