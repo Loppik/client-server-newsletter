@@ -213,14 +213,18 @@ namespace ServerWPF
 
         public void LoadComboBoxItems()
         {
-            TextBlock textBlock;
             List<Subscription> subscriptions = StorageModel.dao.GetAllSubscriptions();
             foreach (Subscription sub in subscriptions)
             {
-                textBlock = new TextBlock();
-                textBlock.Text = sub.name;
-                SubscriptionsComboBox.Items.Add(textBlock);
+                AddTextBlockInComboBox(sub.name, SubscriptionsComboBox);
             }
+        }
+
+        public void AddTextBlockInComboBox(string text, ComboBox comboBox)
+        {
+            TextBlock textBlock = new TextBlock();
+            textBlock.Text = text;
+            comboBox.Items.Add(textBlock);
         }
 
         public void AddNewsEvent(object sender, RoutedEventArgs e)
@@ -240,6 +244,22 @@ namespace ServerWPF
             SetTextOfTextBox(NewsNameTextBox, "");
             SetTextOfTextBox(NewsTextTextBox, "");
             MessageBox.Show("News successfully added");
+        }
+
+        public void AddSubEvent(object sender, RoutedEventArgs e)
+        {
+            Thread addSubThread = new Thread(new ThreadStart(AddSub));
+            addSubThread.Start();
+        }
+
+        public void AddSub()
+        {
+            string name = GetTextOfTextBox(SubNameTextBox);
+            string description = GetTextOfTextBox(SubDescriptionTextBox);
+            Subscription subscription = new Subscription(name, description);
+            StorageModel.dao.AddSubscription(subscription);
+            this.Dispatcher.Invoke(() => { AddTextBlockInComboBox(subscription.name, SubscriptionsComboBox); });
+            MessageBox.Show("Subscription successfully added");
         }
 
         public string GetTextOfTextBox(TextBox textBox)

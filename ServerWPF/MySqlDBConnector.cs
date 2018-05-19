@@ -157,6 +157,13 @@ namespace ServerWPF
             return user;
         }
 
+        public override void AddSubscription(Subscription subscription)
+        {
+            string sqlRequest = "INSERT INTO newsletter.subscription (name, description) VALUES ('" + subscription.name + "', '" + subscription.description + "')";
+            MySqlDataReader reader = GetReaderOfCommandExecute(sqlRequest);
+            reader.Close();
+        }
+
         public MySqlDataReader GetReaderOfCommandExecute(string sqlRequest)
         {
             MySqlCommand command = new MySqlCommand(sqlRequest, connection);

@@ -8,7 +8,7 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         <StackPanel>
-            <ScrollViewer Height="400">
+            <ScrollViewer Height="390">
                 <TabControl>
                     <TabItem Header="News" x:Name="TabNews">
                         <StackPanel x:Name="StackNews">

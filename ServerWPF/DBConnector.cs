@@ -19,5 +19,6 @@ namespace ServerWPF
         public abstract void AddNews(News news);
         public abstract Subscription GetSubscription(string subscriptionName);
         public abstract User AddUser(User user);
+        public abstract void AddSubscription(Subscription subscription);
     }
 }
